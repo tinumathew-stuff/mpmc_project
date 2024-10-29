@@ -1,1 +1,1 @@
-if u want to add anything, copy the code ,make the changes, do the testing and create a pull request, DON'T ADD ANYTHING BLINDLY TO THIS REPOSITORY, WE NEED TO INTEGRATE EVERYTHING, so the best way is to creaate a pull request
+if u want to add anything, copy the code ,make the changes, do the testing and create a pull request, DON'T ADD ANYTHING BLINDLY TO THIS REPOSITORY, WE NEED TO INTEGRATE EVERYTHING, so the best way is to create a pull request
