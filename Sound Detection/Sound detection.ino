@@ -1,76 +1,51 @@
-// basic sound detection
-#define sensorPin 8
+/*
+ * Clap Detection and Device Control
+ * This sketch detects claps using a sound sensor and controls a relay accordingly
+ */
 
-// Variable to store the time when last event happened
-unsigned long lastEvent = 0;
+// Pin definitions
+#define SOUND_SENSOR_PIN 7  // Sound sensor connected to pin 7
+#define RELAY_PIN 8        // Relay connected to pin 8
+
+// Global variables
+unsigned long lastEvent = 0;    // Time of last detected sound
+boolean relayState = false;     // Current state of relay
 
 void setup() {
-	pinMode(sensorPin, INPUT);	// Set sensor pin as an INPUT
-	Serial.begin(9600);
+  // Initialize pins
+  pinMode(SOUND_SENSOR_PIN, INPUT);
+  pinMode(RELAY_PIN, OUTPUT);
+  
+  // Initialize serial communication for debugging
+  Serial.begin(9600);
+  
+  // Ensure relay starts in OFF state
+  digitalWrite(RELAY_PIN, LOW);
+  
+  Serial.println("Clap detection system initialized!");
 }
 
 void loop() {
-	// Read Sound sensor
-	int sensorData = digitalRead(sensorPin);
-
-	// If pin goes LOW, sound is detected
-	if (sensorData == LOW) {
-		
-		// If 25ms have passed since last LOW state, it means that
-		// the clap is detected and not due to any spurious sounds
-		if (millis() - lastEvent > 25) {
-			Serial.println("Clap detected!");
-		}
-		
-		// Remember when last event happened
-		lastEvent = millis();
-	}
+  // Read sound sensor
+  int sensorData = digitalRead(SOUND_SENSOR_PIN);
+  
+  // Check if sound is detected (LOW indicates sound detection)
+  if (sensorData == LOW) {
+    // Check if enough time has passed since last detection
+    // This helps prevent false triggers from echo or continuous noise
+    if (millis() - lastEvent > 25) {
+      // Toggle relay state
+      relayState = !relayState;
+      
+      // Update relay output
+      digitalWrite(RELAY_PIN, relayState);
+      
+      // Debug output
+      Serial.print("Clap detected! Relay state: ");
+      Serial.println(relayState ? "ON" : "OFF");
+    }
+    
+    // Update last event time
+    lastEvent = millis();
+  }
 }
-unsigned long lastEvent = 0;
-pinMode(sensorPin, INPUT);
-Serial.begin(9600);
-int sensorData = digitalRead(sensorPin);
-if (sensorData == LOW) {
-	if (millis() - lastEvent > 25) {
-		Serial.println("Clap detected!");
-	}
-	lastEvent = millis();
-}
-// Controlling Devices With a Clap
-#define sensorPin 7
-#define relayPin 8
-
-// Variable to store the time when last event happened
-unsigned long lastEvent = 0;
-boolean relayState = false;    // Variable to store the state of relay
-
-void setup() {
-	pinMode(relayPin, OUTPUT);  // Set relay pin as an OUTPUT pin
-	pinMode(sensorPin, INPUT);  // Set sensor pin as an INPUT
-}
-
-void loop() {
-	// Read Sound sensor
-	int sensorData = digitalRead(sensorPin);
-
-	// If pin goes LOW, sound is detected
-	if (sensorData == LOW) {
-
-	// If 25ms have passed since last LOW state, it means that
-	// the clap is detected and not due to any spurious sounds
-	if (millis() - lastEvent > 25) {
-		//toggle relay and set the output
-		relayState = !relayState;
-		digitalWrite(relayPin, relayState ? HIGH : LOW);
-	}
-
-	// Remember when last event happened
-	lastEvent = millis();
-	}
-}
-#define relayPin 7  //relayState to keep track of the relay’s status
-
-boolean relayState = false;
-pinMode(relayPin, OUTPUT); // configure the relayPin as an output
-relayState = !relayState;
-digitalWrite(relayPin, relayState ? HIGH : LOW); //the serial monitor and we simply toggle the state of the relay
