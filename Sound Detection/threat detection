@@ -1,0 +1,80 @@
+/*
+ * Threat Detection and Device Control
+ * This sketch detects prolonged loud sounds (like a scream) using a sound sensor 
+ * and controls a relay accordingly to respond to threats.
+ */
+
+// Pin definitions
+#define SOUND_SENSOR_PIN 7  // Sound sensor connected to pin 7
+#define RELAY_PIN 8         // Relay connected to pin 8
+
+// Global variables
+unsigned long threatStartTime = 0;  // Time when loud sound started
+unsigned long lastEvent = 0;        // Time of last detected sound
+boolean relayState = false;         // Current state of relay
+
+// Settings
+const unsigned long threatThresholdTime = 500;  // Minimum duration (ms) to consider a threat
+const unsigned long debounceTime = 2000;        // Debounce time after threat detection (ms)
+
+/*
+ * Function to handle threat detection and relay control
+ */
+boolean handleThreatDetection(int sensorPin, int relayPin) {
+  // Read sound sensor
+  int sensorData = digitalRead(sensorPin);
+
+  // Check if a loud sound is detected (LOW indicates sound detection)
+  if (sensorData == LOW) {
+    // Check if this is the start of a loud sound
+    if (threatStartTime == 0) {
+      threatStartTime = millis();  // Mark the start time of the loud sound
+    }
+
+    // Check if the loud sound has lasted long enough to be considered a threat
+    if (millis() - threatStartTime >= threatThresholdTime) {
+      // Check if enough time has passed since the last detected threat
+      if (millis() - lastEvent > debounceTime) {
+        // Toggle relay state as a response to the threat
+        relayState = !relayState;
+        
+        // Update relay output
+        digitalWrite(relayPin, relayState);
+        
+        // Debug output
+        Serial.print("Threat detected! Relay state: ");
+        Serial.println(relayState ? "ON" : "OFF");
+        
+        // Update last event time to current time
+        lastEvent = millis();
+      }
+
+      // Reset threatStartTime to prevent continuous triggering
+      threatStartTime = 0;
+    }
+  } else {
+    // Reset threatStartTime if sound stops before reaching threshold
+    threatStartTime = 0;
+  }
+
+  return relayState;
+}
+
+void setup() {
+  // Initialize pins
+  pinMode(SOUND_SENSOR_PIN, INPUT);
+  pinMode(RELAY_PIN, OUTPUT);
+  
+  // Initialize serial communication for debugging
+  Serial.begin(9600);
+  
+  // Ensure relay starts in OFF state
+  digitalWrite(RELAY_PIN, LOW);
+  
+  Serial.println("Threat detection system initialized!");
+}
+
+void loop() {
+  // Call the threat detection function
+  handleThreatDetection(SOUND_SENSOR_PIN, RELAY_PIN);
+}
