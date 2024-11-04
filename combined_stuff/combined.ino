@@ -16,7 +16,7 @@ long currentDistance = 0;
 unsigned long lastEvent = 0;    // Time of last detected sound
 boolean relayState = false;     // Current state of relay
 const int buttonPin = 2; // Pin connected to the button
-const int buzzerPin = 8; // Pin connected to the buzzer
+const int buzzerPin = 7; // Pin connected to the buzzer
 
 int melody[] = { NOTE_G3, NOTE_B3 };
 int noteDurations[] = { 8, 8 }; // note durations: 4 = quarter note, 8 = eighth note, etc.
