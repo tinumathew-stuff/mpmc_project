@@ -1,0 +1,187 @@
+#define sensorPin1 A0
+#define soundpin1 A1
+#define sensorPin2 A2
+#define soundpin2 A3
+#define RELAY_PIN1 8        // Relay connected to pin 8
+#define RELAY_PIN2 5        // Relay connected to pin 8
+#define NOTE_C4  262
+#define NOTE_G3  196
+#define NOTE_A3  220
+#define NOTE_B3  247
+#define NOTE_C4  262
+#define flamepin1 11
+#define flamepin2 12
+float sensorValue;
+float outputValue;
+const int trigPin1 = 9;
+const int echoPin1 = 10;
+const int outputPin1 = 13;  //output pin
+const int trigPin2 = 0;
+const int echoPin2 = 1;
+const int outputPin2 = 4;  //output pin
+const int motionThreshold = 5; 
+long previousDistance = 0;
+long currentDistance = 0;
+unsigned long lastEvent = 0;    // Time of last detected sound
+boolean relayState = false;     // Current state of relay
+const int buttonPin1 = 15; // Pin connected to the button
+const int buttonPin2 = 14; // Pin connected to the button
+const int buzzerPin = 7; // Pin connected to the buzzer
+
+int melody[] = { NOTE_G3, NOTE_B3 };
+int noteDurations[] = { 8, 8 }; // note durations: 4 = quarter note, 8 = eighth note, etc.
+bool running = false; // Tracks if melody is playing
+
+void sounddetection(const int soundpin,const int RELAY_PIN){
+  float soundvalue = analogRead(soundpin);
+  Serial.println(soundvalue);
+  if(soundvalue>200){
+    String s1 = "on,";
+    digitalWrite(RELAY_PIN,HIGH);// turn relay ON
+    delay(3000);// keep it ON for 3 seconds
+  }
+  else{String s1 = "off,";}
+}
+
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(SOUND_SENSOR_PIN, INPUT);
+  pinMode(RELAY_PIN1, OUTPUT);
+  pinMode(RELAY_PIN2, OUTPUT);
+  // Initialize serial communication for debugging
+  Serial.begin(9600);
+  // Ensure relay starts in OFF state
+  digitalWrite(RELAY_PIN1, LOW);
+  digitalWrite(RELAY_PIN2, LOW);
+  pinMode(flamepin1, INPUT);
+  pinMode(flamepin2, INPUT);
+  Serial.println("Clap detection system initialized!");
+   pinMode(trigPin1, OUTPUT);
+  pinMode(echoPin1, INPUT);
+  pinMode(outputPin1, OUTPUT);
+  pinMode(buttonPin, INPUT);
+  pinMode(buzzerPin, OUTPUT);
+  pinMode(trigPin2, OUTPUT);
+  pinMode(echoPin2, INPUT);
+  pinMode(outputPin2, OUTPUT);
+  pinMode(buttonPin2, INPUT);
+}
+
+void readSensor(const int sensorPin,const int RELAY_PIN) {
+   // Read the analog value from sensor
+  sensorValue = analogRead(sensorPin);
+  //unsigned int outputValue = map(sensorValue, 0, 1023, 0, 255); // map the 10-bit data to 8-bit data
+  outputValue = (sensorValue/1023)*255;
+  //Serial.println(x);
+  if (int(outputValue) >= 70){
+      String s2 = "on,"; 
+      digitalWrite(RELAY_PIN,HIGH);// turn relay ON
+      delay(3000);// keep it ON for 3 seconds
+  }
+  else{String s2 = "off,";}
+ // return outputValue;
+
+}
+
+void loop() {
+  flamedetection(flamepin1,RELAY_PIN1);
+  sounddetection(soundpin1,RELAY_PIN1);
+  readSensor(sensorPin1,RELAY_PIN1);
+  measureDistance(trigPin1,echoPin,RELAY_PIN1);
+  String s5 = "off";
+  if (digitalRead(buttonPin1) == HIGH && !running) {
+    playMelody(buttonPin1,RELAY_PIN1)
+    String s5 = "on";
+  }
+  String result1 = s1+s2+s3+s4+s5+"/n";
+  flamedetection(flamepin2,RELAY_PIN2);
+  sounddetection(soundpin2,RELAY_PIN2);
+  readSensor(sensorPin2,RELAY_PIN2);
+  measureDistance(trigPin,echoPin,RELAY_PIN2);
+  if (digitalRead(buttonPin2) == HIGH && !running) {
+    playMelody(buttonPin2,RELAY_PIN2)
+    String s5 = "on";
+  }
+  String result2 = s1+s2+s3+s4+s5+"/n";
+  String result = result1+result2;
+  Serial.println(result);
+  delay(50000);
+  currentDistance = measureDistance();
+  if (abs(currentDistance - previousDistance) > motionThreshold) {
+    digitalWrite(outputPin, HIGH);;
+  } else {
+    digitalWrite(outputPin, LOW);
+  }
+  previousDistance = currentDistance;
+  delay(200); 
+  // Call playMelody() whenever needed
+}
+
+//  This function returns the analog data to calling function
+
+
+// Function to handle clap detection and relay control
+
+
+
+long measureDistance(const int trigPin,const int echoPin,const int RELAY_PIN) {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  long duration = pulseIn(echoPin, HIGH); //calc time of echo
+  long distance = duration * 0.034 / 2; //calc dist using time
+  if (abs(currentDistance - previousDistance) > motionThreshold) {
+    String s3 = "on,";
+    digitalWrite(RELAY_PIN,HIGH);// turn relay ON
+    delay(3000);// keep it ON for 3 seconds
+  } 
+  else {
+    String s3 = "off,";
+  }
+  return distance;
+}
+
+void playMelody(const int buttonPin,const int RELAY_PIN) {
+  digitalWrite(RELAY_PIN,HIGH);// turn relay ON
+  delay(3000);// keep it ON for 3 seconds
+  running = true; // Start playing melody
+  // Array of loop iterations and note durations to create the melody sequence
+  int loops[] = { 10, 10, 100 }; 
+  int durations[] = { 5000, 2500, 1000 };
+  for (int i = 0; i < 3 && running; i++) {
+    for (int x = 0; x < loops[i] && running; x++) {
+      for (int thisNote = 0; thisNote < 2 && running; thisNote++) {
+        
+        // Stop melody if button is pressed
+        if (digitalRead(buttonPin) == HIGH) {
+          stopMelody();
+          return;
+        }
+        int noteDuration = durations[i] / noteDurations[thisNote];
+        tone(buzzerPin, melody[thisNote], noteDuration);
+        int pauseBetweenNotes = noteDuration * 1.30;
+        delay(pauseBetweenNotes);
+        noTone(buzzerPin);
+      }
+    }
+  }
+  running = false; // Stop playing melody
+}
+
+void stopMelody() {
+  noTone(buzzerPin);
+  running = false;
+  String s5 = "off";
+}
+
+void flamedetection(const int flamepin,const int RELAY_PIN){
+  if (digitalRead(flamepin) == HIGH) {
+    String s4 = "on,";
+    digitalWrite(RELAY_PIN,HIGH);// turn relay ON
+    delay(3000);// keep it ON for 3 seconds
+  }
+  else{String s4 = "off,";}
+}
