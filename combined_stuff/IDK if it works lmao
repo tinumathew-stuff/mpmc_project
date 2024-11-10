@@ -20,7 +20,8 @@ const int trigPin2 = 0;
 const int echoPin2 = 1;
 const int outputPin2 = 4;  //output pin
 const int motionThreshold = 5; 
-long previousDistance = 0;
+long previousDistance1 = 1000;
+long previousDistance2 = 1000;
 long currentDistance = 0;
 unsigned long lastEvent = 0;    // Time of last detected sound
 boolean relayState = false;     // Current state of relay
@@ -31,6 +32,11 @@ const int buzzerPin = 7; // Pin connected to the buzzer
 int melody[] = { NOTE_G3, NOTE_B3 };
 int noteDurations[] = { 8, 8 }; // note durations: 4 = quarter note, 8 = eighth note, etc.
 bool running = false; // Tracks if melody is playing
+String s1;
+String s2;
+String s3;
+String s4;
+String s5;
 
 void sounddetection(const int soundpin,const int RELAY_PIN){
   float soundvalue = analogRead(soundpin);
@@ -46,7 +52,6 @@ void sounddetection(const int soundpin,const int RELAY_PIN){
 
 void setup() {
   Serial.begin(9600);
-  pinMode(SOUND_SENSOR_PIN, INPUT);
   pinMode(RELAY_PIN1, OUTPUT);
   pinMode(RELAY_PIN2, OUTPUT);
   // Initialize serial communication for debugging
@@ -60,7 +65,7 @@ void setup() {
    pinMode(trigPin1, OUTPUT);
   pinMode(echoPin1, INPUT);
   pinMode(outputPin1, OUTPUT);
-  pinMode(buttonPin, INPUT);
+  pinMode(buttonPin1, INPUT);
   pinMode(buzzerPin, OUTPUT);
   pinMode(trigPin2, OUTPUT);
   pinMode(echoPin2, INPUT);
@@ -88,33 +93,25 @@ void loop() {
   flamedetection(flamepin1,RELAY_PIN1);
   sounddetection(soundpin1,RELAY_PIN1);
   readSensor(sensorPin1,RELAY_PIN1);
-  measureDistance(trigPin1,echoPin,RELAY_PIN1);
+  measureDistance(trigPin1,echoPin1,RELAY_PIN1,previousDistance1);
   String s5 = "off";
   if (digitalRead(buttonPin1) == HIGH && !running) {
-    playMelody(buttonPin1,RELAY_PIN1)
+    playMelody(buttonPin1,RELAY_PIN1);
     String s5 = "on";
   }
   String result1 = s1+s2+s3+s4+s5+"/n";
   flamedetection(flamepin2,RELAY_PIN2);
   sounddetection(soundpin2,RELAY_PIN2);
   readSensor(sensorPin2,RELAY_PIN2);
-  measureDistance(trigPin,echoPin,RELAY_PIN2);
+  measureDistance(trigPin2,echoPin2,RELAY_PIN2,previousDistance2);
   if (digitalRead(buttonPin2) == HIGH && !running) {
-    playMelody(buttonPin2,RELAY_PIN2)
+    playMelody(buttonPin2,RELAY_PIN2);
     String s5 = "on";
   }
   String result2 = s1+s2+s3+s4+s5+"/n";
   String result = result1+result2;
   Serial.println(result);
   delay(50000);
-  currentDistance = measureDistance();
-  if (abs(currentDistance - previousDistance) > motionThreshold) {
-    digitalWrite(outputPin, HIGH);;
-  } else {
-    digitalWrite(outputPin, LOW);
-  }
-  previousDistance = currentDistance;
-  delay(200); 
   // Call playMelody() whenever needed
 }
 
@@ -125,7 +122,7 @@ void loop() {
 
 
 
-long measureDistance(const int trigPin,const int echoPin,const int RELAY_PIN) {
+long measureDistance(const int trigPin,const int echoPin,const int RELAY_PIN,long previousDistance) {
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
   digitalWrite(trigPin, HIGH);
@@ -133,7 +130,7 @@ long measureDistance(const int trigPin,const int echoPin,const int RELAY_PIN) {
   digitalWrite(trigPin, LOW);
   long duration = pulseIn(echoPin, HIGH); //calc time of echo
   long distance = duration * 0.034 / 2; //calc dist using time
-  if (abs(currentDistance - previousDistance) > motionThreshold) {
+  if (abs(previousDistance-distance) > motionThreshold) {
     String s3 = "on,";
     digitalWrite(RELAY_PIN,HIGH);// turn relay ON
     delay(3000);// keep it ON for 3 seconds
