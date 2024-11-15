@@ -1,3 +1,4 @@
+#include <SoftwareSerial.h>
 #define sensorPin1 A0
 #define soundpin1 A1
 #define sensorPin2 A2
@@ -11,6 +12,8 @@
 #define NOTE_C4  262
 #define flamepin1 11
 #define flamepin2 12
+const int rxPin = 2;
+const int txPin = 3;
 float sensorValue;
 float outputValue;
 const int trigPin1 = 9;
@@ -51,6 +54,7 @@ void sounddetection(const int soundpin,const int RELAY_PIN){
 
 void setup() {
   Serial.begin(9600);
+  espSerial.begin(9600);
   pinMode(RELAY_PIN1, OUTPUT);
   pinMode(RELAY_PIN2, OUTPUT);
   // Initialize serial communication for debugging
@@ -108,7 +112,9 @@ void loop() {
   }
    String result2 = s1+s2+s3+s4+s5+"/n";
    String result = result1+"\n"+result2;
-  Serial.println(result);
+   espSerial.println(result); // Send data to the ESP8266
+  Serial.println("Data sent to ESP8266: " + result);
+ // Serial.println(result);
   delay(50000);
   // Call playMelody() whenever needed
 }
