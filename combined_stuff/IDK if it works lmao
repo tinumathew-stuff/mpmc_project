@@ -12,8 +12,11 @@
 #define NOTE_C4  262
 #define flamepin1 11
 #define flamepin2 12
+//esp code
 const int rxPin = 2;
 const int txPin = 3;
+SoftwareSerial espSerial(rxPin, txPin);
+//----
 float sensorValue;
 float outputValue;
 const int trigPin1 = 9;
