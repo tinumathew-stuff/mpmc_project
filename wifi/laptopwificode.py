@@ -1,6 +1,5 @@
 import socket
-import json
-import os
+import time
 # File paths
 states_file = "states.txt"  # Input states file
 output_file = "D:/hostel monitoring backend/sensorData.txt"# Output parameters file
@@ -33,10 +32,10 @@ def update_parameters_if_changed(states_file, output_file):
         s4='"room1Occupancy":'+'"'+displaystate1[3]+'",'
     else:
         s4='"room1Occupancy":'+'"'+displaystate2[3]+'",'
-    if (states[4]=="off"):
-        s5='"room1Emergency":'+'"'+displaystate1[4]+'",'
-    else:
+    if (states[4]=="on1"):
         s5='"room1Emergency":'+'"'+displaystate2[4]+'",'
+    else:
+        s5='"room1Emergency":'+'"'+displaystate1[4]+'",'
 
 
 
@@ -57,10 +56,10 @@ def update_parameters_if_changed(states_file, output_file):
         s9='"room2Occupancy":'+'"'+displaystate1[3]+'",'
     else:
         s9='"room2Occupancy":'+'"'+displaystate2[3]+'",'
-    if (states[9]=="off"):
-        s10='"room2Emergency":'+'"'+displaystate1[4]+'"'
-    else:
+    if (states[4]=="on2"):
         s10='"room2Emergency":'+'"'+displaystate2[4]+'"'
+    else:
+        s10='"room2Emergency":'+'"'+displaystate1[4]+'"'
 
 
     finalstring="{"+s1+s2+s3+s4+s5+s6+s7+s8+s9+s10+"}"
@@ -96,12 +95,11 @@ try:
             update_parameters_if_changed(states_file, output_file)
         with open(reset_file, 'r') as file1:
             file1.seek(0)
-            message=file1.readline()
+            message=file1.readline()+"\n"
         y=x
         # Send a response to the ESP8266
         sock.sendto(message.encode(), (ESP8266_IP, ESP8266_PORT))
         print(f"Sent to ESP8266: {message}")
-
 except KeyboardInterrupt:
     print("Server stopped.")
 finally:
