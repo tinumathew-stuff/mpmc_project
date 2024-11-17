@@ -49,10 +49,10 @@ void sounddetection(const int soundpin, const int buttonPin, const int LED) {
     if (soundvalue > 500) {
         digitalWrite(LED, LOW);
         playMelody();
-        s1 = "on,";
+        s2 = "on,";
     }
     else{
-      s1="off,";
+      s2="off,";
     }
 }
 
@@ -129,11 +129,11 @@ void readSensor(const int sensorPin, const int buttonPin, const int LED) {
     outputValue = (sensorValue / 1023) * 255;
     if (int(outputValue) >= 120) {
         digitalWrite(LED, LOW);
-        s2 = "on,";
+        s1 = "on,";
         playMelody();
     }
     else{
-      s2="off,";
+      s1="off,";
     }
 
 }
@@ -228,4 +228,3 @@ void measureDistance(const int trigPin, const int echoPin, long ThresholdDistanc
         s3 = "off,";
     }
 }
-
